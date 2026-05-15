@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Rubber Duck Debugger"
+version = "1.0.0"
+id = "artifacts/rubber-duck"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23644
+
+[services.development]
+run = "pnpm --filter @workspace/rubber-duck run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rubber-duck", "run", "build" ]
+publicDir = "artifacts/rubber-duck/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23644"
+BASE_PATH = "/"

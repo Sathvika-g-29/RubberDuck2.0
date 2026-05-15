@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: chat
+    description: Rubber duck debugging chat operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /chat/stream:
+    post:
+      operationId: streamChat
+      tags: [chat]
+      summary: Stream a chat response (SSE)
+      description: >
+        Sends messages to the rubber duck AI and streams the response
+        token-by-token via Server-Sent Events. The response Content-Type
+        will be text/event-stream; use fetch + ReadableStream on the client.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: SSE stream of tokens
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +63,29 @@ components:
           type: string
       required:
         - status
-
+    ChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+    ChatInput:
+      type: object
+      required: [messages, mode]
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        mode:
+          type: string
+          enum: [socratic, debrief]
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
